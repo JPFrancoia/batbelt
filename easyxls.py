@@ -27,6 +27,7 @@ will return the value of cell A1.
 
 import re
 import xlrd
+from xlwt import Workbook
 
 
 class EasyXls():
@@ -37,7 +38,8 @@ class EasyXls():
         #Opening of the workbook. No need to specify
         #the extension
         #TODO: handle errors
-        self.wb = xlrd.open_workbook(workbook + ".xls")
+        self.name = workbook
+        self.wb = xlrd.open_workbook(self.name + ".xls")
 
         #Attribute containing the names of all the sheets
         #in the workbook
@@ -48,12 +50,18 @@ class EasyXls():
         self.feuille = self.wb.sheet_by_name(self.names_sheets[0])
 
 
+        self.workbootout = Workbook()
+        self.sheet_out = self.workbootout.add_sheet("OCB")
+
+
     def parse(self, string):
 
         """transforms "A1", "A", "1" or "AA1" into the corresponding
-        indexes"""
+        indexes. Should be private, use ONLY in this class"""
 
         alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+        string = str(string)
 
         #Find the number(s) of the cell(s)
         nbr = re.findall('\d+', string)
@@ -88,12 +96,30 @@ class EasyXls():
 
         index_lettre, index_nbr = self.parse(string)
 
+        #Get one liste with the required values.
         if index_lettre is None:
-            return self.feuille.row_values(index_nbr)
+            liste =  self.feuille.row_values(index_nbr)
         elif index_nbr is None:
-            return self.feuille.col_values(index_lettre)
+            liste = self.feuille.col_values(index_lettre)
         elif index_nbr is not None and index_lettre is not None:
-            return self.feuille.cell_value(index_lettre, index_nbr)
+            liste = self.feuille.cell_value(index_lettre, index_nbr)
+
+        new_liste = []
+
+        #Returns only the non empty values.
+        #Try to convert the values to float.
+        for value in liste:
+            if not value:
+                continue
+            else:
+                try:
+                    value = float(value)
+                except ValueError:
+                    pass
+
+            new_liste.append(value)
+
+        return new_liste 
 
 
     def change_sheet(self, name):
@@ -101,6 +127,38 @@ class EasyXls():
         """Change the current sheet of the workbook"""
 
         self.feuille = self.wb.sheet_by_name(name)
+
+
+    def write(self, coo, content, sens="h"):
+
+
+        index_lettre, index_nbr = self.parse(coo)
+
+        if index_lettre is None:
+            index_lettre = 0
+        if index_nbr is None:
+            index_nbr = 0
+
+        if type(content) is list:
+
+            if sens is "h":
+                for index, value in enumerate(content):
+                    print(index_nbr, index_lettre)
+                    self.sheet_out.write(index_nbr, index_lettre + index, value)
+
+            elif sens is "v":
+                for index, value in enumerate(content):
+                    self.sheet_out.write(index_nbr + index, index_nbr, value)
+
+        else:
+            if index_nbr is not None and index_lettre is not None:
+                return self.feuille.cell_value(index_lettre, index_nbr)
+            else:
+                print("Problème coo, et le content n'est pas une liste")
+
+
+        # Ecriture du classeur sur le disque
+        self.workbootout.save(self.name + "_out.xls")
 
 
 

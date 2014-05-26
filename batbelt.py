@@ -80,6 +80,27 @@ def strByteToOctet(size):
             return "{0} {1}".format(round(nbr, 1), x), int(round(nbr_octets, 0))
         nbr /= 1000.0
 
+def frange(start, end=None, inc=None):
+    "A range function, that does accept float increments..."
+
+    if end == None:
+        end = start + 0.0
+        start = 0.0
+
+    if inc == None:
+        inc = 1.0
+
+    L = []
+    while 1:
+        next = start + len(L) * inc
+        if inc > 0 and next >= end:
+            break
+        elif inc < 0 and next <= end:
+            break
+        L.append(next)
+        
+    return L
+
 
 
 if __name__ == "__main__":
