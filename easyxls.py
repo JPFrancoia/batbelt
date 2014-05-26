@@ -131,6 +131,8 @@ class EasyXls():
 
     def write(self, coo, content, sens="h"):
 
+        """Writes the values in a file called NameOfTheWorkbook + _out,
+        to not earase the current notebook""" 
 
         index_lettre, index_nbr = self.parse(coo)
 
@@ -156,8 +158,7 @@ class EasyXls():
             else:
                 print("Problème coo, et le content n'est pas une liste")
 
-
-        # Ecriture du classeur sur le disque
+        #Writing the workbook
         self.workbootout.save(self.name + "_out.xls")
 
 
