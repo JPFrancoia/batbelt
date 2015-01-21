@@ -104,7 +104,7 @@ def frange(start, end=None, inc=None):
     return L
 
 
-def red_chisqg(ydata, ymod, deg=3,sd=None):  
+def red_chisq(ydata, ymod, deg=3,sd=None):  
 
     """
     http://astropython.blogspot.fr/2012/02/computing-chi-squared-and-reduced-chi.html
