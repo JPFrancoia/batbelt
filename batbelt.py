@@ -8,6 +8,8 @@ import unidecode
 import datetime
 from dateutil.parser import parse
 from dateutil import relativedelta
+import numpy as np
+
 
 """Module pour fct de secours ou qui n'ont rien à voir avec les thèmes des autres
 modules"""
@@ -101,6 +103,40 @@ def frange(start, end=None, inc=None):
         
     return L
 
+
+def red_chisqg(ydata, ymod, deg=3,sd=None):  
+
+    """
+    http://astropython.blogspot.fr/2012/02/computing-chi-squared-and-reduced-chi.html
+    Returns the reduced Chi² of a data set.
+    ydata is the y observed values
+    ymod is the y model values
+    deg is the number of parameters
+    sd is the standard deviation
+    """
+
+    if sd==None:  
+        chisq=np.sum((ydata-ymod)**2)  
+    else:  
+        chisq=np.sum( ((ydata-ymod)/sd)**2 )  
+
+    nu=len(ydata)-1-deg  
+            
+    return chisq/nu   
+
+
+def droite(x, a, b):
+
+    y = a*x + b 
+
+    return y
+
+
+def strip_tags(input_str):
+
+    """Simply returns the string without the html tags"""
+
+    return re.sub('<[^>]*>', '', input_str)
 
 
 if __name__ == "__main__":
