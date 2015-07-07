@@ -108,6 +108,20 @@ class EasyXls():
 
         return data_list
 
+    def getAllRows(self):
+
+        """returns a list of the values of all the rows
+        of a sheet"""
+
+        data_list = []
+
+        for i in range(self.feuille.nrows):
+            data_to_add = [value for value in self.feuille.row_values(i) if value !='']
+            if data_to_add:
+                data_list.append(data_to_add)
+
+        return data_list
+
 
     def value(self, string):
 
@@ -121,49 +135,60 @@ class EasyXls():
         elif index_nbr is None:
             liste = self.feuille.col_values(index_lettre)
         elif index_nbr is not None and index_lettre is not None:
-            liste = self.feuille.cell_value(index_lettre, index_nbr)
+            liste = self.feuille.cell_value(index_nbr, index_lettre)
 
         return liste
 
 
-    def change_sheet(self, name):
+    def changeSheet(self, name):
 
         """Change the current sheet of the workbook"""
 
         self.feuille = self.wb.sheet_by_name(name)
 
 
-    def write(self, coo, content, sens="h"):
+    def write(self, coo, content, sens="h", path=None):
 
         """Writes the values in a file called NameOfTheWorkbook + _out,
         to not earase the current notebook"""
 
-        index_lettre, index_nbr = self._parse(coo)
+        if type(coo) == str:
+            index_lettre, index_nbr = self._parse(coo)
 
-        if index_lettre is None:
-            index_lettre = 0
-        if index_nbr is None:
-            index_nbr = 0
+            if index_lettre is None:
+                index_lettre = 0
+            if index_nbr is None:
+                index_nbr = 0
+        elif type(coo) == tuple:
+            index_nbr = coo[0]
+            index_lettre = coo[1]
+        else:
+            if sens == "h":
+                index_nbr, index_lettre = coo, 0
+            elif sens == "v":
+                index_nbr, index_lettre = 0, coo
 
         if type(content) is list:
 
             if sens is "h":
                 for index, value in enumerate(content):
-                    print(index_nbr, index_lettre)
                     self.sheet_out.write(index_nbr, index_lettre + index, value)
 
             elif sens is "v":
                 for index, value in enumerate(content):
-                    self.sheet_out.write(index_nbr + index, index_nbr, value)
+                    self.sheet_out.write(index_nbr + index, index_lettre, value)
 
         else:
             if index_nbr is not None and index_lettre is not None:
-                return self.feuille.cell_value(index_lettre, index_nbr)
+                self.sheet_out.write(index_nbr, index_lettre, content)
             else:
                 print("Problème coo, et le content n'est pas une liste")
 
         # Writing the workbook
-        self.workbootout.save(self.name + "_out.xls")
+        if path is None:
+            self.workbootout.save(self.name + "_out.xls")
+        else:
+            self.workbootout.save(path)
 
 
 

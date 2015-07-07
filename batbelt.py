@@ -82,6 +82,7 @@ def strByteToOctet(size):
             return "{0} {1}".format(round(nbr, 1), x), int(round(nbr_octets, 0))
         nbr /= 1000.0
 
+
 def frange(start, end=None, inc=None):
     "A range function, that does accept float increments..."
 
@@ -104,7 +105,7 @@ def frange(start, end=None, inc=None):
     return L
 
 
-def red_chisq(ydata, ymod, deg=3,sd=None):  
+def red_chisq(ydata, ymod, deg=3, sd=None):
 
     """
     http://astropython.blogspot.fr/2012/02/computing-chi-squared-and-reduced-chi.html
@@ -115,14 +116,14 @@ def red_chisq(ydata, ymod, deg=3,sd=None):
     sd is the standard deviation
     """
 
-    if sd==None:  
-        chisq=np.sum((ydata-ymod)**2)  
-    else:  
-        chisq=np.sum( ((ydata-ymod)/sd)**2 )  
+    if sd is None:
+        chisq = np.sum((ydata - ymod)**2)
+    else:
+        chisq = np.sum(((ydata - ymod) / sd)**2)
 
-    nu=len(ydata)-1-deg  
-            
-    return chisq/nu   
+    nu = len(ydata) - 1 - deg
+
+    return chisq / nu
 
 
 def droite(x, a, b):
@@ -139,6 +140,10 @@ def strip_tags(input_str):
     return re.sub('<[^>]*>', '', input_str)
 
 
-if __name__ == "__main__":
-    pass
+def remove_dup_order(seq):
 
+    """Function to remove duplicates of a list while keeping the order"""
+
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
