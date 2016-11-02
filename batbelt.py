@@ -11,8 +11,8 @@ from dateutil import relativedelta
 import numpy as np
 
 
-"""Module pour fct de secours ou qui n'ont rien à voir avec les thèmes des autres
-modules"""
+"""Module pour fct de secours ou qui n'ont rien à voir avec les thèmes des
+autres modules"""
 
 
 def sizeof(nbr, unit="o", rounded=1):
@@ -20,15 +20,15 @@ def sizeof(nbr, unit="o", rounded=1):
     """On récupère la taille en octets, et on la formate en Mo
     ou en Go si plus grand que 1000 Mo. Si on passe l'argument 'b'
     en paramètre, on calcule en ibytes"""
-    #http://www.fevrierdorian.com/blog/post/2011/06/26/Taille-d-un-fichier-humainement-comprehensible-en-Python
+    # http://www.fevrierdorian.com/blog/post/2011/06/26/Taille-d-un-fichier-humainement-comprehensible-en-Python
 
     if unit == "o":
-        for x in ['octets','ko','Mo','Go','To']:
+        for x in ['octets', 'ko', 'Mo', 'Go', 'To']:
             if nbr < 1000.0:
                 return "{0} {1}".format(round(nbr, rounded), x)
             nbr /= 1000.0
     elif unit == "b":
-        for x in ['bytes','KiB','MiB','GiB','TiB']:
+        for x in ['bytes', 'KiB', 'MiB', 'GiB', 'TiB']:
             if nbr < 1024.0:
                 return "{0} {1}".format(round(nbr, rounded), x)
             nbr /= 1024.0

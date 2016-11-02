@@ -14,7 +14,7 @@ or "AA1" into the corresponding indexes, such if you do something like:
     xls.value("A")
 
 You will get all the values of the column.
-    
+
     xls.value("1")
 
 will return the values of row 1.
@@ -160,23 +160,21 @@ class EasyXls():
             if index_nbr is None:
                 index_nbr = 0
         elif type(coo) == tuple:
-            index_nbr = coo[0]
-            index_lettre = coo[1]
+            index_lettre = coo[0]
+            index_nbr = coo[1]
         else:
-            if sens == "h":
-                index_nbr, index_lettre = coo, 0
-            elif sens == "v":
-                index_nbr, index_lettre = 0, coo
+            raise TypeError("coo must be a string or a tuple")
 
         if type(content) is list:
 
             if sens is "h":
                 for index, value in enumerate(content):
                     self.sheet_out.write(index_nbr, index_lettre + index, value)
-
             elif sens is "v":
                 for index, value in enumerate(content):
                     self.sheet_out.write(index_nbr + index, index_lettre, value)
+            else:
+                raise ValueError("Sens must be either 'h' or 'v'")
 
         else:
             if index_nbr is not None and index_lettre is not None:
