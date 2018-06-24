@@ -12,6 +12,7 @@ from dateutil.parser import parse
 from dateutil import relativedelta
 import numpy as np
 from typing import List, Set, Tuple, Optional
+import _io
 
 
 def sizeof(nbr: float, unit: str = "o", rounded: int = 1) -> str:
@@ -212,6 +213,31 @@ def remove_dup_order(seq: List[str]) -> List[str]:
     seen.update(seq)
 
     return list(seen)
+
+
+def fread(fid: _io.TextIOWrapper, nelements: int, dtype: str) -> np.array:
+
+    """fread
+    Equivalent for Matlab fread function
+
+    Args:
+        fid (_io.TextIOWrapper): file, opened before
+        nelements (int): number of elements to read
+        dtype (str): type of the element to read
+
+    Returns:
+        np.array: elements read
+    """
+
+    if dtype is np.str:
+        dt = np.uint8  # WARNING: assuming 8-bit ASCII for np.str!
+    else:
+        dt = dtype
+
+    data_array = np.fromfile(fid, dt, nelements)
+    data_array.shape = (nelements, 1)
+
+    return data_array
 
 
 if __name__ == "__main__":
