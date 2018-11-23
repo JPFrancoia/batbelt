@@ -3,7 +3,6 @@
 
 from .easyxls import EasyXls
 from .log import MyLog
-import .batbelt
 
 __all__ = [
     "EasyXls",
