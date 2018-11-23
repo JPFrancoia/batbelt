@@ -1,6 +1,5 @@
 #!/usr/bin/python
-# -*-coding:Utf-8 -*
-
+# coding: utf-8
 
 """
 Layer for the xlrd module, which reads an xls file (Excel file,
@@ -24,16 +23,15 @@ will return the values of row 1.
 will return the value of cell A1.
 """
 
-
 import re
 import xlrd
+import numpy as np
 from xlwt import Workbook
+from typing import Optional, Tuple, Any, List, Union
 
 
-class EasyXls():
-
-    def __init__(self, workbook):
-
+class EasyXls:
+    def __init__(self, workbook: str) -> None:
 
         # Opening of the workbook. No need to specify
         # the extension
@@ -46,152 +44,203 @@ class EasyXls():
         # in the workbook
         self.names_sheets = self.wb.sheet_names()
 
-        # By default, the first sheet is loaded, but the method
-        # change_sheet(name_of_the_sheet) can change that
-        self.feuille = self.wb.sheet_by_name(self.names_sheets[0])
-
+        # By default, load first sheet
+        self.sheet = self.wb.sheet_by_name(self.names_sheets[0])
 
         self.workbootout = Workbook()
         self.sheet_out = self.workbootout.add_sheet("OCB")
 
+    def _parse(self, input_str: str) -> Tuple[int, int]:
 
-    def _parse(self, string):
+        """
+        Transforms "A1", "A", "1" or "AA1" into the corresponding indexes
 
-        """transforms "A1", "A", "1" or "AA1" into the corresponding
-        indexes"""
+        Arguments:
+            input_str (str): a Excel column name (letter), row index, or cell coo
+
+        Returns:
+            Tuple[int, int]: the true coordinates of the selected cells
+        """
 
         alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-        string = str(string)
+        input_str = str(input_str)
 
         # Find the number(s) of the cell(s)
-        nbr = re.findall('\d+', string)
+        nbr = re.findall("\d+", input_str)
+
+        index_nbr: Optional[int]
 
         if nbr:
-            # Delete the numbers in the string to get only the letters
-            lettres = string.replace(nbr[0], '')
+            # Delete the numbers in the input_str to get only the letters
+            letters = input_str.replace(nbr[0], "")
 
             # Get the index by substracting 1 to the number
             index_nbr = int(nbr[0]) - 1
         else:
-            lettres = string
+            letters = input_str
             index_nbr = None
 
-        index_lettre = None
+        index_letter = None
 
-        for position, lettre in enumerate(lettres):
+        for position, lettre in enumerate(letters):
 
-            if index_lettre is None:
-                index_lettre = 0
+            if index_letter is None:
+                index_letter = 0
 
             # Calculate the good index:
             # AA differs from AAA
             if position != 0:
-                index_lettre += 26**position
+                index_letter += 26 ** position
 
-            index_lettre += alphabet.index(lettre)
+            index_letter += alphabet.index(lettre)
 
-        return (index_lettre, index_nbr)
+        return (index_letter, index_nbr)
 
+    def get_all_columns(self) -> List[List[Any]]:
 
-    def getAllColumns(self):
+        """
+        Returns a list of lists of the values of all the columns of a sheet
+        One list per column.
 
-        """returns a list of the values of all the columns
-        of a sheet"""
+        Returns:
+            List[List[Any]]: list of list of values. Type is unpredictable, could be
+                             str, int, float or other
+        """
 
         data_list = []
 
-        for i in range(self.feuille.ncols):
-            data_to_add = [value for value in self.feuille.col_values(i) if value !='']
+        for i in range(self.sheet.ncols):
+            data_to_add = [v if v != "" else np.nan for v in self.sheet.col_values(i)]
             if data_to_add:
                 data_list.append(data_to_add)
 
         return data_list
 
-    def getAllRows(self):
+    def get_all_rows(self) -> List[List[Any]]:
 
-        """returns a list of the values of all the rows
-        of a sheet"""
+        """
+        Returns a list of lists of the values of all the rows of a sheet
+        One list per row.
+
+        Returns:
+            List[List[Any]]: list of list of values. Type is unpredictable, could be
+                             str, int, float or other
+        """
 
         data_list = []
 
-        for i in range(self.feuille.nrows):
-            data_to_add = [value for value in self.feuille.row_values(i) if value !='']
+        for i in range(self.sheet.nrows):
+            data_to_add = [v if v != "" else np.nan for v in self.sheet.row_values(i)]
             if data_to_add:
                 data_list.append(data_to_add)
 
         return data_list
 
+    def value(self, input_str: str) -> List[Any]:
 
-    def value(self, string):
+        """
+        Returns the value(s) of the specified cell(s)
 
-        """Returns the value(s) of the specified cell(s)"""
+        Arguments:
+            input_str (str): selection of cells
 
-        index_lettre, index_nbr = self._parse(string)
+        Returns:
+            List[Any]: list of values for selected cells. If selection is a row, return
+                       all the values in row. If selection is column, return values in
+                       columun. If selection is a cell, return a list of len 1 with the
+                       cell value
+        """
+
+        index_letter, index_nbr = self._parse(input_str)
 
         # Get one liste with the required values.
-        if index_lettre is None:
-            liste = self.feuille.row_values(index_nbr)
+        if index_letter is None:
+            liste = self.sheet.row_values(index_nbr)
         elif index_nbr is None:
-            liste = self.feuille.col_values(index_lettre)
-        elif index_nbr is not None and index_lettre is not None:
-            liste = self.feuille.cell_value(index_nbr, index_lettre)
+            liste = self.sheet.col_values(index_letter)
+        elif index_nbr is not None and index_letter is not None:
+            liste = [self.sheet.cell_value(index_nbr, index_letter)]
 
         return liste
 
+    def change_sheet(self, name: str) -> None:
 
-    def changeSheet(self, name):
+        """
+        Change current sheet of the workbook
 
-        """Change the current sheet of the workbook"""
+        Arguments:
+            name (str): name of the sheet to switch to
 
-        self.feuille = self.wb.sheet_by_name(name)
+        Returns:
+            None
+        """
 
+        self.sheet = self.wb.sheet_by_name(name)
 
-    def write(self, coo, content, sens="h", path=None):
+    def write(
+        self,
+        coo: Union[str, Tuple[int, int]],
+        content: Union[List[Any], Any],
+        direction: str = "h",
+        path: str = None,
+    ) -> None:
 
-        """Writes the values in a file called NameOfTheWorkbook + _out,
-        to not earase the current notebook"""
+        """
+        Arguments:
+            coo (Union[str, Tuple[int, int]]: cell, or row, or col coordinates
+            content (Union[List[Any, Any]]): content to write.
+                                             Sould be a lost or any value
+            direction (str): how to write the content.
+                             h for horizontally, v for vertically
+            path (str): default None. Path for the output workbook.
+                        If None, output path will be forged from input file + _out.xlsx
 
-        if type(coo) == str:
-            index_lettre, index_nbr = self._parse(coo)
+        Returns:
+            None:
+        """
 
-            if index_lettre is None:
-                index_lettre = 0
+        if type(coo) is str:
+            index_letter, index_nbr = self._parse(coo)
+
+            if index_letter is None:
+                index_letter = 0
             if index_nbr is None:
                 index_nbr = 0
-        elif type(coo) == tuple:
-            index_lettre = coo[0]
+        elif type(coo) is tuple:
+            index_letter = coo[0]
             index_nbr = coo[1]
         else:
             raise TypeError("coo must be a string or a tuple")
 
         if type(content) is list:
 
-            if sens is "h":
+            if direction is "h":
                 for index, value in enumerate(content):
-                    self.sheet_out.write(index_nbr, index_lettre + index, value)
-            elif sens is "v":
+                    self.sheet_out.write(index_nbr, index_letter + index, value)
+            elif direction is "v":
                 for index, value in enumerate(content):
-                    self.sheet_out.write(index_nbr + index, index_lettre, value)
+                    self.sheet_out.write(index_nbr + index, index_letter, value)
             else:
                 raise ValueError("Sens must be either 'h' or 'v'")
 
         else:
-            if index_nbr is not None and index_lettre is not None:
-                self.sheet_out.write(index_nbr, index_lettre, content)
+            if index_nbr is not None and index_letter is not None:
+                self.sheet_out.write(index_nbr, index_letter, content)
             else:
-                print("Problème coo, et le content n'est pas une liste")
+                raise ValueError("Cell's coo not provided and content not a list")
 
-        # Writing the workbook
+        # Write in the workbook
         if path is None:
             self.workbootout.save(self.name + "_out.xls")
         else:
             self.workbootout.save(path)
 
 
-
 if __name__ == "__main__":
+    import os
 
-    xls = EasyXls("5nM")
+    data_path = os.path.join("sales_in", "MAXILASE__Jan-March__2016.xlsx")
+    xls = EasyXls(data_path)
     # print(xls.value("B2"))
-    print(xls.value("A"))
+    # print(xls.value("A"))
